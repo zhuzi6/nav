@@ -5,7 +5,7 @@ import SimComponent from 'src/view/sim/index.component'
 import SideComponent from 'src/view/side/index.component'
 import ShortcutComponent from 'src/view/shortcut/index.component'
 import WebpComponent from 'src/view/app/default/app.component'
-import { isSelfDevelop } from 'src/utils/util'
+import { isSelfDevelop } from 'src/utils/utils'
 import { getDefaultTheme } from 'src/utils'
 
 export const routes: Routes = [
@@ -65,8 +65,8 @@ export const routes: Routes = [
         loadComponent: () => import('src/view/system/collect/index.component'),
       },
       {
-        path: 'vip',
-        loadComponent: () => import('src/view/system/vip-auth/index.component'),
+        path: 'auth',
+        loadComponent: () => import('src/view/system/auth/index.component'),
       },
       {
         path: 'tag',

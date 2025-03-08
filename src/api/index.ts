@@ -15,10 +15,11 @@ import {
   components,
 } from 'src/store'
 import { ISettings } from 'src/types'
-import { isSelfDevelop } from 'src/utils/util'
+import { isSelfDevelop } from 'src/utils/utils'
 import { isLogin } from 'src/utils/user'
 import { DB_PATH } from 'src/constants'
 import LZString from 'lz-string'
+import event from 'src/utils/mitt'
 
 const { gitRepoUrl, imageRepoUrl } = config
 const s = gitRepoUrl.split('/')
@@ -73,6 +74,7 @@ export function getContentes() {
       settings[k] = resSettings[k]
     }
     getTagMap()
+    event.emit('WEB_REFRESH')
     return res
   })
 }
@@ -221,6 +223,14 @@ export async function getUserCollect(data?: Record<string, any>) {
     return http.post('/api/collect/get', data)
   }
   return httpNav.post('/api/get', data)
+}
+
+export async function getUserCollectCount(data: Record<string, any> = {}) {
+  data['showError'] = false
+  if (isSelfDevelop) {
+    return http.post('/api/collect/get', data)
+  }
+  return httpNav.post('/api/collect/count', data)
 }
 
 export async function saveUserCollect(data?: Record<string, any>) {

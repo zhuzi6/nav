@@ -1,11 +1,10 @@
 // 开源项目，未经作者同意，不得以抄袭/复制代码/修改源代码版权信息。
 // Copyright @ 2018-present xiejiahe. All rights reserved.
 // See https://github.com/xjh22222228/nav
-import { isSelfDevelop } from 'src/utils/util'
+import { isSelfDevelop } from 'src/utils/utils'
 
 const english: Record<string, any> = {
   _loading: 'Loading...',
-  _webTitle: 'Discovery Navigation',
   _uncategorized: 'Unclassified',
   _modifySuccess: 'Modification succeeded!',
   _copySuccess: 'Copy succeeded!',
@@ -137,7 +136,6 @@ const english: Record<string, any> = {
   _tagSettings: 'Tag',
   _websiteMang: 'Website',
   _addRow: 'Add',
-  _bookImportTip: `<p>Supports most mainstream browsers. If the import fails, it is temporarily not supported</p>`,
   _engineName: 'Engine name',
   _status: 'Status',
   _isDisable: 'Disable',
@@ -179,7 +177,7 @@ const english: Record<string, any> = {
   _buildTip:
     'After modification, please save and wait for the build to complete. Leaving is invalid',
   _enableSEO: 'Enable SEO (loading slightly slower)',
-  _allowCollect: 'Allow users to submit indexed content',
+  _allowUser: 'Allow users to submit',
   _collectMenuView: `Please refer to the user's inclusion menu for specific details`,
   _displaySwitchTheme: 'Display Switch Theme',
   _requestAddress: 'Request Address',
@@ -201,7 +199,7 @@ const english: Record<string, any> = {
   _sidebarTitle: 'Sidebar title',
   _defTitle4: 'Default website title, recommended to be within 4 words',
   _inputAuthCode: 'Please enter the authorization code',
-  _waitHandle: 'Waiting for the stationmaster to handle',
+  _waitHandle: 'Submitted successfully, waiting for webmaster review',
   _collect: 'Get',
   _confirmCollect: 'Are you sure?',
   _pendingGet: 'Getting...',
@@ -285,6 +283,21 @@ const english: Record<string, any> = {
   _errCountTip:
     "Last time, {count} website links were detected to be invalid. Please refer to the management website for details. If you need to check the status again, simply click on 'Save' to trigger the event.",
   _getErrorWeb: 'Get error web',
+  _categoryName: 'Name',
+  _dayIs: 'Today is',
+  _rest: 'R',
+  _distance: 'Distance',
+  _collectTip: 'If a user applies for inclusion, please handle it',
+  _colTitle: 'Collection processing ({count})',
+  _type: 'Type',
+  _handle: 'Handle',
+  _headCode:
+    '<head>You can insert styles, scripts, statistics, etc. here</head>',
+  _hours: '{num} hr',
+  _minutes: '{num} min',
+  _seconds: '{num} s',
+  _same: 'Same',
+  _sameExists: '已存在',
 }
 
 export default english

@@ -12,7 +12,7 @@ import { ITagPropValues } from 'src/types'
 import { updateFileContent } from 'src/api'
 import { TAG_PATH } from 'src/constants'
 import { tagList } from 'src/store'
-import { isSelfDevelop } from 'src/utils/util'
+import { isSelfDevelop } from 'src/utils/utils'
 import { NzButtonModule } from 'ng-zorro-antd/button'
 import { NzInputModule } from 'ng-zorro-antd/input'
 import { NzTableModule } from 'ng-zorro-antd/table'
@@ -61,7 +61,6 @@ export default class SystemTagComponent {
     this.tagList.unshift({
       id: this.incrementId,
       name: '',
-      createdAt: '',
       color: '#f50000',
       desc: '',
       isInner: false,

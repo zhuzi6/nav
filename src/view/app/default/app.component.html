@@ -16,8 +16,8 @@
           let i = index;
           trackBy: commonService.trackByItem
         "
-        (click)="handleCilckNav(i)"
-        [class.active]="commonService.page === i"
+        (click)="handleCilckNav(item.id)"
+        [class.active]="commonService.oneIndex === i"
         class="nav-title"
       >
         {{ item.title }}
@@ -25,22 +25,25 @@
     </nav>
   </header>
 
-  <app-search-engine />
+  <app-search />
 
-  <div class="wrapper" *ngIf="commonService.websiteList[commonService.page]">
+  <div
+    class="wrapper"
+    *ngIf="commonService.websiteList[commonService.oneIndex]"
+  >
     <nav
       class="children-nav"
-      *ngIf="commonService.websiteList[commonService.page]?.nav?.length"
+      *ngIf="commonService.websiteList[commonService.oneIndex]?.nav?.length"
     >
       <span
         class="tag"
         *ngFor="
-          let item of commonService.websiteList[commonService.page].nav;
+          let item of commonService.websiteList[commonService.oneIndex].nav;
           let i = index;
           trackBy: commonService.trackByItem
         "
-        [class.active]="commonService.id === i"
-        (click)="commonService.handleSidebarNav(i)"
+        [class.active]="commonService.twoIndex === i"
+        (click)="commonService.handleClickClass(item.id)"
       >
         {{ item.title }}
       </span>
@@ -51,32 +54,20 @@
       </h2>
 
       <div
-        style="padding: 0 10px"
-        nz-row
-        [nzGutter]="[16, 16]"
-        [style.display]="item.collapsed ? 'none' : ''"
+        class="px-3 grid gap-x-4 gap-y-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4"
+        [class.hidden]="item['collapsed']"
+        [ngClass]="{
+          '2xl:grid-cols-6':
+            commonService.settings.sideCardStyle === 'original' ||
+            commonService.settings.sideCardStyle === 'example'
+        }"
       >
-        <div
-          class="gutter-row"
-          nz-col
-          [nzSpan]="8"
-          [nzMd]="12"
-          [nzXl]="6"
-          [nzXs]="24"
-          *ngFor="
-            let el of item.nav;
-            index as j;
-            trackBy: commonService.trackByItemWeb
-          "
-        >
-          <app-card
-            [cardStyle]="commonService.settings.appCardStyle"
-            [dataSource]="el"
-            [indexs]="[commonService.page, commonService.id, i, j]"
-            [searchKeyword]="commonService.searchKeyword"
-            class="column-border"
-          ></app-card>
-        </div>
+        <app-card
+          *ngFor="let el of item.nav; trackBy: commonService.trackByItemWeb"
+          [cardStyle]="commonService.settings.appCardStyle"
+          [dataSource]="el"
+          class="column-border"
+        ></app-card>
       </div>
     </div>
   </div>

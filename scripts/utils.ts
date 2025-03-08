@@ -1,10 +1,13 @@
-// Copyright @ 2018-present x.iejiahe. All rights reserved.
+// Copyright @ 2018-present xie.jiahe. All rights reserved.
 // See https://github.com/xjh22222228/nav
 import dayjs from 'dayjs'
-import LOAD_MAP from './loading.mjs'
+import LOAD_MAP from './loading'
 import utc from 'dayjs/plugin/utc.js'
 import timezone from 'dayjs/plugin/timezone.js'
 import getWebInfo from 'info-web'
+import path from 'node:path'
+import { INavProps, ISettings, ITagPropValues, IWebProps } from '../src/types'
+import { SELF_SYMBOL } from '../src/constants/symbol'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -17,14 +20,38 @@ export const TAG_ID_NAME1 = '中文'
 export const TAG_ID_NAME2 = '英文'
 export const TAG_ID_NAME3 = 'GitHub'
 
+export const PATHS = {
+  upload: path.resolve('_upload', 'images'),
+  db: path.resolve('data', 'db.json'),
+  settings: path.resolve('data', 'settings.json'),
+  tag: path.resolve('data', 'tag.json'),
+  search: path.resolve('data', 'search.json'),
+  collect: path.resolve('data', 'collect.json'),
+  component: path.resolve('data', 'component.json'),
+  internal: path.resolve('data', 'internal.json'),
+  config: path.resolve('nav.config.yaml'),
+  pkg: path.resolve('package.json'),
+  html: {
+    index: path.resolve('dist', 'browser', 'index.html'),
+    main: path.resolve('src', 'main.html'),
+    write: path.resolve('src', 'index.html'),
+  },
+} as const
+
+interface WebCountResult {
+  userViewCount: number
+  loginViewCount: number
+}
+
 // 统计网站数量
-export function getWebCount(websiteList) {
+export function getWebCount(websiteList: INavProps[]): WebCountResult {
   // 用户查看所有数量
   let userViewCount = 0
   // 登陆者统计所有数量
   let loginViewCount = 0
   let diffCount = 0
-  function r(nav) {
+
+  function r(nav: any[]): void {
     if (!Array.isArray(nav)) return
 
     for (let i = 0; i < nav.length; i++) {
@@ -37,7 +64,8 @@ export function getWebCount(websiteList) {
       }
     }
   }
-  function r2(nav, ownVisible) {
+
+  function r2(nav: any[], ownVisible?: boolean): void {
     if (!Array.isArray(nav)) return
 
     for (let i = 0; i < nav.length; i++) {
@@ -55,71 +83,100 @@ export function getWebCount(websiteList) {
       }
     }
   }
+
   r(websiteList)
   r2(websiteList)
+
   return {
     userViewCount: userViewCount - diffCount,
     loginViewCount,
   }
 }
 
-// 设置网站的面包屑类目显示
-export function setWeb(nav, settings, tags = []) {
-  let id = 0 // 为每个网站设置唯一ID
-  if (!Array.isArray(nav)) return
+let maxWebId = 0
+let maxClassId = 0
 
-  function removeIconFont(item) {
+function getMaxWebId(nav: any[]): void {
+  function f(nav: any[]): void {
+    for (let i = 0; i < nav.length; i++) {
+      const item = nav[i]
+      if (item.name && item.id > maxWebId) {
+        maxWebId = item.id
+      }
+      if (item.title && item.id > maxClassId) {
+        maxClassId = item.id
+      }
+      if (item.nav) {
+        f(item.nav)
+      }
+    }
+  }
+  f(nav)
+}
+
+function incrementWebId(id: number | string): number {
+  id = Number.parseInt(id as string)
+  if (!id || id < 0) {
+    return ++maxWebId
+  }
+  return id
+}
+
+function incrementClassId(id: number | string): number {
+  id = Number.parseInt(id as string)
+  if (!id || id < 0) {
+    return ++maxClassId
+  }
+  return id
+}
+
+export function setWebs(
+  nav: INavProps[],
+  settings: ISettings,
+  tags: ITagPropValues[] = []
+): INavProps[] {
+  if (!Array.isArray(nav)) return []
+
+  function handleAdapter(item: any): void {
     delete item.collapsed
-    delete item.id
+    delete item.createdAt
     if (!item.ownVisible) {
       delete item.ownVisible
     }
-    item.icon ||= ''
-    if (typeof item.icon === 'string' && item.icon.startsWith('icon')) {
-      item.icon = ''
-    }
+    item.id = incrementClassId(item.id)
     item.icon = replaceJsdelivrCDN(item.icon, settings)
+    item.nav ||= []
   }
 
-  function formatDate(item) {
-    item.createdAt ||= Date.now()
-    item.createdAt = dayjs(item.createdAt).format('YYYY-MM-DD HH:mm')
-  }
+  getMaxWebId(nav)
 
   for (let i = 0; i < nav.length; i++) {
     const item = nav[i]
-    removeIconFont(item)
-    formatDate(item)
+    handleAdapter(item)
     if (item.nav) {
       for (let j = 0; j < item.nav.length; j++) {
         const navItem = item.nav[j]
-        removeIconFont(navItem)
-        formatDate(navItem)
+        handleAdapter(navItem)
         if (navItem.nav) {
           for (let k = 0; k < navItem.nav.length; k++) {
             const navItemItem = navItem.nav[k]
-            removeIconFont(navItemItem)
-            formatDate(navItemItem)
+            handleAdapter(navItemItem)
 
-            navItemItem.nav.sort((a, b) => {
-              const aIdx =
-                a.index == null || a.index === '' ? 100000 : Number(a.index)
-              const bIdx =
-                b.index == null || b.index === '' ? 100000 : Number(b.index)
-              return aIdx - bIdx
-            })
             if (navItemItem.nav) {
+              navItemItem.nav.sort((a: any, b: any) => {
+                const aIdx =
+                  a.index == null || a.index === '' ? 100000 : Number(a.index)
+                const bIdx =
+                  b.index == null || b.index === '' ? 100000 : Number(b.index)
+                return aIdx - bIdx
+              })
               for (let l = 0; l < navItemItem.nav.length; l++) {
-                let breadcrumb = []
-                const webItem = navItemItem.nav[l]
-                formatDate(webItem)
+                let breadcrumb: string[] = []
+                const webItem = navItemItem.nav[l] as IWebProps
                 breadcrumb.push(item.title, navItem.title, navItemItem.title)
                 breadcrumb = breadcrumb.filter(Boolean)
                 webItem.breadcrumb = breadcrumb
-                webItem.id = id += 1
-
-                // 新字段补充
-                webItem.urls ||= {}
+                webItem.id = Math.trunc(incrementWebId(webItem.id))
                 webItem.tags ||= []
                 webItem.rate ??= 5
                 webItem.top ??= false
@@ -130,60 +187,28 @@ export function setWeb(nav, settings, tags = []) {
                 webItem.icon ||= ''
                 webItem.icon = replaceJsdelivrCDN(webItem.icon, settings)
                 webItem.url = webItem.url.trim()
-                webItem.desc = webItem.desc.trim()
-
-                webItem.name = webItem.name.replace(/<b>|<\/b>/g, '')
-                webItem.desc = webItem.desc.replace(/<b>|<\/b>/g, '')
+                if (webItem.url.endsWith('/')) {
+                  webItem.url = webItem.url.slice(0, -1)
+                }
+                webItem.name = webItem.name.trim().replace(/<b>|<\/b>/g, '')
+                webItem.desc = webItem.desc.trim().replace(/<b>|<\/b>/g, '')
 
                 delete webItem.__desc__
                 delete webItem.__name__
+                delete webItem['extra']
+                delete webItem['createdAt']
 
                 // 节省空间
-                if (!webItem.top) {
-                  delete webItem.top
-                }
-                if (!webItem.ownVisible) {
-                  delete webItem.ownVisible
-                }
-                if (webItem.index === '') {
-                  delete webItem.index
-                }
-                if (webItem.topTypes?.length <= 0) {
+                !webItem.top && delete webItem.top
+                !webItem.ownVisible && delete webItem.ownVisible
+                webItem.index === '' && delete webItem.index
+                ;(webItem.topTypes ?? []).length === 0 &&
                   delete webItem.topTypes
-                }
 
-                // 兼容现有标签,以id为key (V9版本删除)
-                for (const k in webItem.urls) {
-                  if (k === TAG_ID_NAME1) {
-                    webItem.urls[TAG_ID1] = webItem.urls[k]
-                    delete webItem.urls[TAG_ID_NAME1]
-                  }
-                  if (k === TAG_ID_NAME2) {
-                    webItem.urls[TAG_ID2] = webItem.urls[k]
-                    delete webItem.urls[TAG_ID_NAME2]
-                  }
-                  if (k === TAG_ID_NAME3) {
-                    webItem.urls[TAG_ID3] = webItem.urls[k]
-                    delete webItem.urls[TAG_ID_NAME3]
-                  }
-                }
-
-                // 从 v8.10.0 开始为了能够排序标签从对象改为数组
-                if (webItem.tags.length <= 0) {
-                  for (const k in webItem.urls) {
-                    const id = String(k)
-                    // 网站标签和系统标签关联，如果系统标签删除了，网站标签也被删除
-                    const has = tags.some((item) => String(item.id) === id)
-                    if (has) {
-                      webItem.tags.push({
-                        id: String(k),
-                        url: webItem.urls[k],
-                      })
-                    }
-                  }
-                }
-
-                delete webItem.urls
+                // 网站标签和系统标签关联
+                webItem.tags = webItem.tags.filter((item) => {
+                  return tags.some((tag) => String(tag.id) === String(item.id))
+                })
               }
             }
           }
@@ -194,14 +219,18 @@ export function setWeb(nav, settings, tags = []) {
   return nav
 }
 
-export function writeSEO(webs, payload) {
+interface SEOPayload {
+  settings: ISettings
+}
+
+export function writeSEO(webs: INavProps[], payload: SEOPayload): string {
   const { settings } = payload
   const nowDate = dayjs.tz().format('YYYY-MM-DD HH:mm:ss')
   let seoTemplate = `
 <div data-url="https://github.com/xjh22222228/nav" data-server-time="${Date.now()}" data-a="x.i.e-jiahe" data-date="${nowDate}" id="META-NAV" style="z-index:-1;position:fixed;top:-10000vh;left:-10000vh;">
 `
 
-  function r(navList) {
+  function r(navList: any[]): void {
     for (let value of navList) {
       if (Array.isArray(value.nav)) {
         r(value.nav)
@@ -223,8 +252,18 @@ export function writeSEO(webs, payload) {
   return seoTemplate
 }
 
-export function writeTemplate({ html, settings, seoTemplate }) {
-  function getLoadKey() {
+interface TemplateParams {
+  html: string
+  settings: ISettings
+  seoTemplate: string
+}
+
+export function writeTemplate({
+  html,
+  settings,
+  seoTemplate,
+}: TemplateParams): string {
+  function getLoadKey(): string {
     const keys = Object.keys(LOAD_MAP)
     const rand = Math.floor(Math.random() * keys.length)
     const loadingKey =
@@ -241,7 +280,7 @@ export function writeTemplate({ html, settings, seoTemplate }) {
   <meta name="keywords" content="${settings.keywords}" id="xjh_2" />
   <link rel="icon" href="${settings.favicon}" />
   <link rel ="apple-touch-icon" href="${settings.favicon}" />
-  <link rel="prefetch" href="//unpkg.com/ng-zorro-antd@18.1.1/ng-zorro-antd.dark.min.css" />
+  <link rel="prefetch" href="//unpkg.com/ng-zorro-antd@19.1.0/ng-zorro-antd.dark.min.css" />
 `.trim()
   let t = html
   t = t.replace(
@@ -268,26 +307,40 @@ export function writeTemplate({ html, settings, seoTemplate }) {
   return t
 }
 
-function correctURL(url) {
-  if (!url) {
-    return url
-  }
-  if (url[0] === '!') {
+function correctURL(url: string): string {
+  if (url[0] === SELF_SYMBOL) {
     return url.slice(1)
   }
   return url
 }
 
-export async function spiderWeb(db, settings) {
-  let errorUrlCount = 0
-  const items = []
+interface SpiderWebResult {
+  webs: INavProps[]
+  errorUrlCount: number
+  time: number
+}
 
-  async function r(nav) {
+interface WebInfoResponse {
+  status: boolean
+  errorMsg?: string
+  iconUrl?: string
+  title?: string
+  description?: string
+}
+
+export async function spiderWeb(
+  db: INavProps[],
+  settings: ISettings
+): Promise<SpiderWebResult> {
+  let errorUrlCount = 0
+  const items: IWebProps[] = []
+
+  async function r(nav: any[]): Promise<void> {
     if (!Array.isArray(nav)) return
 
     for (let i = 0; i < nav.length; i++) {
       const item = nav[i]
-      if (item.url) {
+      if (item.url && item.url[0] !== '!') {
         delete item.ok
         if (
           settings.checkUrl ||
@@ -306,7 +359,7 @@ export async function spiderWeb(db, settings) {
     }
   }
 
-  r(db)
+  await r(db)
 
   const max = settings.spiderQty ?? 20
   const count = Math.ceil(items.length / max)
@@ -320,7 +373,7 @@ export async function spiderWeb(db, settings) {
   }
 
   while (current < count) {
-    const requestPromises = []
+    const requestPromises: Promise<any>[] = []
     for (let i = current * max; i < current * max + max; i++) {
       const item = items[i]
       if (item) {
@@ -332,12 +385,12 @@ export async function spiderWeb(db, settings) {
       }
     }
 
-    const promises = await Promise.allSettled(requestPromises)
+    const promises = await Promise.all(requestPromises)
 
     for (let i = 0; i < promises.length; i++) {
       const idx = current * max + i
       const item = items[idx]
-      const res = promises[i].value
+      const res = promises[i].value as WebInfoResponse
       console.log(
         `${idx}：${
           res.status ? '正常' : `疑似异常: ${res.errorMsg}`
@@ -372,7 +425,7 @@ export async function spiderWeb(db, settings) {
 
         if (settings.spiderTitle === 'ALWAYS' && res.title) {
           console.log(
-            `更新标题：${correctURL(item.url)}: "${item.title}" => "${
+            `更新标题：${correctURL(item.url)}: "${item['title']}" => "${
               res.title
             }"`
           )
@@ -383,7 +436,7 @@ export async function spiderWeb(db, settings) {
           res.title
         ) {
           console.log(
-            `更新标题：${correctURL(item.url)}: "${item.title}" => "${
+            `更新标题：${correctURL(item.url)}: "${item['title']}" => "${
               res.title
             }"`
           )
@@ -416,7 +469,7 @@ export async function spiderWeb(db, settings) {
   }
 
   const diff = Math.ceil((Date.now() - now) / 1000)
-  console.log(`Time: ${diff} seconds`)
+  console.log(`OK: Time: ${diff} seconds`)
 
   return {
     webs: db,
@@ -425,7 +478,10 @@ export async function spiderWeb(db, settings) {
   }
 }
 
-export function replaceJsdelivrCDN(str = '', settings) {
+export function replaceJsdelivrCDN(
+  str: string = '',
+  settings: ISettings
+): string {
   const cdn = settings?.gitHubCDN
   if (!cdn) {
     return str

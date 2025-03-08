@@ -1,10 +1,10 @@
 // Copyright @ 2018-present xiejiahe. All rights reserved.
 // See https://github.com/xjh22222228/nav
-@use './assets/styles/tailwind.css' as *;
 @use './assets/styles/dark.scss' as *;
 @use './assets/styles/nprogress.css' as *;
 @use './assets/fonts/iconfont.css' as *;
 @use '../node_modules/ng-zorro-antd/ng-zorro-antd.css' as *;
+@use './assets/styles/tailwind.css' as *;
 
 @font-face {
   font-family: 'text';
@@ -49,6 +49,10 @@ li {
   list-style: none;
 }
 
+a {
+  color: #1890ff;
+}
+
 a,
 a:link {
   text-decoration: none;
@@ -91,19 +95,11 @@ em {
   left: 50%;
   transform: translate(-50%, -50%);
 }
-.border-none {
-  border: none;
-}
+
 .touch-active:active {
   background: rgba(0, 0, 0, 0.2) !important;
 }
 
-.clamp3 {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
 .remove {
   position: fixed !important;
   top: -10000px !important;
@@ -196,3 +192,52 @@ textarea.ant-input {
     display: none;
   }
 }
+
+// loading start
+@keyframes my-rotatex1 {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes loading-dashx2 {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -40px;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -120px;
+  }
+}
+.x31 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.x21 {
+  width: 30px;
+  height: 30px;
+  animation: my-rotatex1 2s linear infinite;
+}
+.path {
+  stroke-dasharray: 90, 150;
+  stroke-dashoffset: 0;
+  stroke-width: 5;
+  stroke: #409eff;
+  stroke-linecap: round;
+  animation: loading-dashx2 1.5s ease-in-out infinite;
+}
+// loading end
